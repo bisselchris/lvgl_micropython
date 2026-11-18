@@ -1,0 +1,53 @@
+name: Build LVGL MicroPython ESP32-S3 N16R8
+
+on:
+  workflow_dispatch:
+    inputs:
+      display_driver:
+        description: 'Pilote écran (ex: st7789, ili9341, gc9a01, st7796)'
+        required: false
+        default: 'st7789'
+      touch_driver:
+        description: 'Pilote tactile (ex: cst816s, ft5x06, gt911, xpt2046)'
+        required: false
+        default: ''
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cloner le dépôt lvgl_micropython
+        uses: actions/checkout@v4
+
+      - name: Installer les dépendances système Linux
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y build-essential git cmake ninja-build libffi-dev libssl-dev dfu-util libusb-1.0-0 python3-pip python3-venv
+
+      - name: Préparer le module sdcard.py et son manifeste
+        run: |
+          mkdir -p custom_frozen
+          curl -sSL https://githubusercontent.com -o custom_frozen/sdcard.py
+          echo 'freeze("$(PORT_DIR)/boards/ESP32_GENERIC_S3/modules")' > custom_frozen/manifest.py
+          echo 'freeze("/home/runner/work/lvgl_micropython/lvgl_micropython/custom_frozen", "sdcard.py")' >> custom_frozen/manifest.py
+
+      - name: Compiler le firmware avec make.py
+        run: |
+          CMD="python3 make.py esp32 BOARD=ESP32_GENERIC_S3 BOARD_VARIANT=SPIRAM_OCT --flash-size=16 FROZEN_MANIFEST=$(pwd)/custom_frozen/manifest.py"
+          
+          if [ -n "${{ github.event.inputs.display_driver }}" ]; then
+            CMD="$CMD DISPLAY=${{ github.event.inputs.display_driver }}"
+          fi
+          
+          if [ -n "${{ github.event.inputs.touch_driver }}" ]; then
+            CMD="$CMD INDEV=${{ github.event.inputs.touch_driver }}"
+          fi
+          
+          echo "Exécution de : $CMD"
+          eval $CMD
+
+      - name: Publier le fichier .bin compilé
+        uses: actions/upload-artifact@v4
+        with:
+          name: lvgl-micropython-esp32s3-n16r8
+          path: build/*.bin
