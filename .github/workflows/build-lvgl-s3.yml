@@ -38,9 +38,14 @@ jobs:
           
           echo "Exécution de : $CMD"
           eval $CMD
+          
+          echo "Fichiers .bin générés :"
+          find . -name "*.bin"
 
       - name: Publier le fichier .bin compilé
         uses: actions/upload-artifact@v4
         with:
           name: lvgl-micropython-esp32s3-n16r8
-          path: build/*.bin
+          path: |
+            **/lvgl_micropy*.bin
+            **/firmware.bin
