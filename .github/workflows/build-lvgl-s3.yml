@@ -14,7 +14,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
       - name: Cloner le dépôt lvgl_micropython
         uses: actions/checkout@v4
@@ -38,14 +38,9 @@ jobs:
           
           echo "Exécution de : $CMD"
           eval $CMD
-          
-          echo "Fichiers .bin générés :"
-          find . -name "*.bin"
 
-      - name: Publier le fichier .bin compilé
+      - name: Publier tous les fichiers .bin générés
         uses: actions/upload-artifact@v4
         with:
           name: lvgl-micropython-esp32s3-n16r8
-          path: |
-            **/lvgl_micropy*.bin
-            **/firmware.bin
+          path: "**/*.bin"
