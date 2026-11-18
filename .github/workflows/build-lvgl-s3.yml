@@ -26,21 +26,22 @@ jobs:
 
       - name: Compiler le firmware avec make.py
         run: |
-          CMD="python3 make.py esp32 mpy_cross submodules BOARD=ESP32_GENERIC_S3 VARIANT=SPIRAM_OCT"
+          set -e
+          ARGS="esp32 BOARD=ESP32_GENERIC_S3 BOARD_VARIANT=SPIRAM_OCT"
           
           if [ -n "${{ github.event.inputs.display_driver }}" ]; then
-            CMD="$CMD DISPLAY=${{ github.event.inputs.display_driver }}"
+            ARGS="$ARGS DISPLAY=${{ github.event.inputs.display_driver }}"
           fi
           
           if [ -n "${{ github.event.inputs.touch_driver }}" ]; then
-            CMD="$CMD INDEV=${{ github.event.inputs.touch_driver }}"
+            ARGS="$ARGS INDEV=${{ github.event.inputs.touch_driver }}"
           fi
           
-          echo "Exécution de : $CMD"
-          eval $CMD
+          echo "Lancement de : python3 make.py $ARGS"
+          python3 make.py $ARGS
 
-      - name: Publier tous les fichiers .bin générés
+      - name: Publier le firmware compilé
         uses: actions/upload-artifact@v4
         with:
           name: lvgl-micropython-esp32s3-n16r8
-          path: "**/*.bin"
+          path: build/*.bin
