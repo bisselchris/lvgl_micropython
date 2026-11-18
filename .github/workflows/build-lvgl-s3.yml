@@ -24,19 +24,9 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential git cmake ninja-build libffi-dev libssl-dev dfu-util libusb-1.0-0 python3-pip python3-venv
 
-      - name: Préparer le module sdcard.py et son manifeste
+      - name: Compiler le firmware avec make.py
         run: |
-          mkdir -p custom_frozen
-          curl -sSL https://githubusercontent.com -o custom_frozen/sdcard.py
-          cat << 'EOF' > custom_frozen/manifest.py
-          include("$(PORT_DIR)/boards/ESP32_GENERIC_S3/mpconfigboard.cmake")
-          freeze("$(PORT_DIR)/boards/ESP32_GENERIC_S3/modules")
-          freeze("custom_frozen", "sdcard.py")
-          EOF
-
-      - name: Compiler le firmware avec make.py (DIO + SPIRAM_OCT)
-        run: |
-          CMD="python3 make.py esp32 BOARD=ESP32_GENERIC_S3 BOARD_VARIANT=SPIRAM_OCT FROZEN_MANIFEST=$(pwd)/custom_frozen/manifest.py"
+          CMD="python3 make.py esp32 mpy_cross submodules BOARD=ESP32_GENERIC_S3 VARIANT=SPIRAM_OCT"
           
           if [ -n "${{ github.event.inputs.display_driver }}" ]; then
             CMD="$CMD DISPLAY=${{ github.event.inputs.display_driver }}"
