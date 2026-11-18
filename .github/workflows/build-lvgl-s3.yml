@@ -4,13 +4,13 @@ on:
   workflow_dispatch:
     inputs:
       display_driver:
-        description: 'Pilote écran (ex: st7789, ili9341, gc9a01, st7796)'
+        description: 'Pilote écran (ex: st7796, ili9486, st7789)'
         required: false
-        default: 'st7789'
+        default: 'st7796'
       touch_driver:
-        description: 'Pilote tactile (ex: cst816s, ft5x06, gt911, xpt2046)'
+        description: 'Pilote tactile (ex: xpt2046, cst816s, gt911, ou laisser vide)'
         required: false
-        default: ''
+        default: 'xpt2046'
 
 jobs:
   build:
@@ -28,12 +28,15 @@ jobs:
         run: |
           mkdir -p custom_frozen
           curl -sSL https://githubusercontent.com -o custom_frozen/sdcard.py
-          echo 'freeze("$(PORT_DIR)/boards/ESP32_GENERIC_S3/modules")' > custom_frozen/manifest.py
-          echo 'freeze("/home/runner/work/lvgl_micropython/lvgl_micropython/custom_frozen", "sdcard.py")' >> custom_frozen/manifest.py
+          cat << 'EOF' > custom_frozen/manifest.py
+          include("$(PORT_DIR)/boards/ESP32_GENERIC_S3/mpconfigboard.cmake")
+          freeze("$(PORT_DIR)/boards/ESP32_GENERIC_S3/modules")
+          freeze("custom_frozen", "sdcard.py")
+          EOF
 
-      - name: Compiler le firmware avec make.py
+      - name: Compiler le firmware avec make.py (DIO + SPIRAM_OCT)
         run: |
-          CMD="python3 make.py esp32 BOARD=ESP32_GENERIC_S3 BOARD_VARIANT=SPIRAM_OCT --flash-size=16 FROZEN_MANIFEST=$(pwd)/custom_frozen/manifest.py"
+          CMD="python3 make.py esp32 BOARD=ESP32_GENERIC_S3 BOARD_VARIANT=SPIRAM_OCT FROZEN_MANIFEST=$(pwd)/custom_frozen/manifest.py"
           
           if [ -n "${{ github.event.inputs.display_driver }}" ]; then
             CMD="$CMD DISPLAY=${{ github.event.inputs.display_driver }}"
