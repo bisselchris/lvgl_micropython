@@ -18,7 +18,7 @@ jobs:
       - name: Compiler le firmware avec ST7796 et ILI9488
         run: |
           set -e
-          python3 make.py esp32 BOARD=ESP32_GENERIC_S3 BOARD_VARIANT=SPIRAM_OCT DISPLAY="st7796 ili9488" INDEV=xpt2046
+          python3 make.py esp32 BOARD=ESP32_GENERIC_S3 BOARD_VARIANT=SPIRAM_OCT DISPLAY=st7796 DISPLAY=ili9488 INDEV=xpt2046
 
       - name: Publier le firmware compilé
         uses: actions/upload-artifact@v4
