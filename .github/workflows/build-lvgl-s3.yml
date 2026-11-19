@@ -10,11 +10,6 @@ jobs:
       - name: Cloner le dépôt lvgl_micropython
         uses: actions/checkout@v4
 
-      - name: Installer les dépendances système Linux
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y build-essential git cmake ninja-build libffi-dev libssl-dev dfu-util libusb-1.0-0 python3-pip python3-venv
-
       - name: Compiler le firmware avec ST7796 et ILI9488
         run: |
           set -e
