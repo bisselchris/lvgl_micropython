@@ -1,16 +1,7 @@
-name: Build LVGL MicroPython ESP32-S3 N16R8
+name: Build LVGL MicroPython ESP32-S3 N16R8 Multi-LCD
 
 on:
   workflow_dispatch:
-    inputs:
-      display_driver:
-        description: 'Pilote écran (ex: st7796, ili9486, st7789)'
-        required: false
-        default: 'st7796'
-      touch_driver:
-        description: 'Pilote tactile (ex: xpt2046, cst816s, gt911, ou laisser vide)'
-        required: false
-        default: 'xpt2046'
 
 jobs:
   build:
@@ -24,24 +15,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y build-essential git cmake ninja-build libffi-dev libssl-dev dfu-util libusb-1.0-0 python3-pip python3-venv
 
-      - name: Compiler le firmware avec make.py
+      - name: Compiler le firmware avec ST7796, ILI9488 et ILI9486
         run: |
           set -e
-          ARGS="esp32 BOARD=ESP32_GENERIC_S3 BOARD_VARIANT=SPIRAM_OCT"
-          
-          if [ -n "${{ github.event.inputs.display_driver }}" ]; then
-            ARGS="$ARGS DISPLAY=${{ github.event.inputs.display_driver }}"
-          fi
-          
-          if [ -n "${{ github.event.inputs.touch_driver }}" ]; then
-            ARGS="$ARGS INDEV=${{ github.event.inputs.touch_driver }}"
-          fi
-          
-          echo "Lancement de : python3 make.py $ARGS"
-          python3 make.py $ARGS
+          python3 make.py esp32 BOARD=ESP32_GENERIC_S3 BOARD_VARIANT=SPIRAM_OCT DISPLAY="st7796 ili9488 ili9486" INDEV=xpt2046
 
       - name: Publier le firmware compilé
         uses: actions/upload-artifact@v4
         with:
-          name: lvgl-micropython-esp32s3-n16r8
+          name: lvgl-micropython-esp32s3-n16r8-multilcd
           path: build/*.bin
